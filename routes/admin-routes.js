@@ -5,7 +5,11 @@ const router = express.Router()
 
 router.get('/')
 
-router.post('/signup')
+router.post('/signup', [
+    check('email').normalizeEmail().isEmail(),
+    check('name').not().isEmpty(),
+    check('password').isLength({ min: 6 }),
+])
 router.post('/login')
 
 export default router

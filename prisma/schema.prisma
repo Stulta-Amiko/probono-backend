@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,42 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model admin {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.Text
+  email     String   @db.Text
+  password  String   @db.Text
+  region_id Int?
+  region    region?  @relation(fields: [region_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "admin_region_id_fk")
+  client    client[]
+
+  @@index([region_id], map: "admin_region_id_fk")
+}
+
+model client {
+  id        Int      @id @default(autoincrement())
+  region_id Int?
+  admin_id  Int?
+  name      String   @db.Text
+  address   String   @db.Text
+  location  String?  @db.Text
+  remark    String?  @db.Text
+  birthdate DateTime @db.DateTime(0)
+  checkdate DateTime @db.DateTime(0)
+  admin     admin?   @relation(fields: [admin_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "client_admin_id_fk")
+  region    region?  @relation(fields: [region_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "client_region_id_fk")
+
+  @@index([admin_id], map: "client_admin_id_fk")
+  @@index([region_id], map: "client_region_id_fk")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model region {
+  id     Int      @id @default(autoincrement())
+  name   String?  @db.Text
+  admin  admin[]
+  client client[]
 }
