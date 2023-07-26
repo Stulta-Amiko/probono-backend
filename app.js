@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 import { PrismaClient } from '@prisma/client'
 
 import adminRouter from './routes/admin-routes.js'
-import usersRouter from './routes/users-routes.js'
+import clientRouter from './routes/client-routes.js'
 import notificationRouter from './routes/notification-routes.js'
 import regionRouter from './routes/region-routes.js'
 
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 
 app.use('/api/admin', adminRouter)
 
-app.use('/api/users', usersRouter)
+app.use('/api/users', clientRouter)
 
 app.use('/api/notification', notificationRouter)
 

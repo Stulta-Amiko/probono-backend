@@ -7,3 +7,5 @@ const getUserByName = (req, res, next) => {}
 const createUser = (req, res, next) => {}
 
 const deleteUser = (req, res, next) => {}
+
+export default { getUserByName, getUserByRegionId, createUser, deleteUser }

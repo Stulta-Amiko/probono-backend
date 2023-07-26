@@ -4,9 +4,11 @@ import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 
 import HttpError from '../../../backend/models/http-error'
+import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
 const JWTKEY = process.env.TOKEN_KEY
+const prisma = new PrismaClient()
 
 const getAdminById = async(req, res, next) => {}
 
@@ -22,7 +24,8 @@ const signup = async(req, res, next) => {
     let existingUser
 
     try {
-        //존재하는 유저 환risma에서 데이터 찾아서 이메일 대조후 결과반환
+        existingUser = await prisma.admin.findMany({ where: { email: email } })
+        console.log(await prisma.admin.findMany({ where: { email: email } }))
     } catch (err) {
         const error = new HttpError('회원가입에 실패했습니다. (초기오류)', 500)
         return next(error)
@@ -53,7 +56,14 @@ const signup = async(req, res, next) => {
     /*const createdUser = */ //유저 생성과정
 
     try {
-        //프리즈마에 createUser 데이터 집어 넣는 과정
+        await prisma.admin.create({
+            data: {
+                email,
+                name,
+                password: hashedPassword,
+                region_id,
+            },
+        })
     } catch (err) {
         const error = new HttpError(
             '회원가입에 실패했습니다. 다시 시도해주세요. (프리즈마 데이터 입력 관련)',
@@ -63,8 +73,17 @@ const signup = async(req, res, next) => {
     }
 
     let token
+
+    const user = await prisma.admin.findUnique({
+        where: {
+            email: email,
+        },
+    })
+
     try {
-        //jwt 통해서 로그인된 유저의 정보 전송 및 토큰 제한시간 설정 1시간 예정
+        token = jwt.sign({ adminId: user.id, email: user.email }, JWTKEY, {
+            expiresIn: '1h',
+        })
     } catch (err) {
         const error = new HttpError(
             '회원가입에 실패했습니다. 다시 시도해주세요.(토큰관련)',
