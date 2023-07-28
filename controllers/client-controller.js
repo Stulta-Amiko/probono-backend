@@ -1,11 +1,22 @@
+import { PrismaClient } from '@prisma/client'
 import HttpError from '../../../backend/models/http-error'
 
-const getUserByRegionId = (req, res, next) => {}
+const prisma = new PrismaClient()
 
-const getUserByName = (req, res, next) => {}
+const getUserByRegionId = async(req, res, next) => {}
 
-const createUser = (req, res, next) => {}
+const getUserByAdminId = async(req, res, next) => {}
 
-const deleteUser = (req, res, next) => {}
+const getUserByName = async(req, res, next) => {}
 
-export default { getUserByName, getUserByRegionId, createUser, deleteUser }
+const createUser = async(req, res, next) => {}
+
+const deleteUser = async(req, res, next) => {}
+
+export default {
+    getUserByName,
+    getUserByAdminId,
+    getUserByRegionId,
+    createUser,
+    deleteUser,
+}

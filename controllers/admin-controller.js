@@ -18,12 +18,11 @@ const getAdminById = async(req, res, next) => {
     try {
         user = await prisma.admin.findUnique({ where: { id: adminId } })
     } catch (err) {
-        console.log(err.message)
         const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요.', 500)
         return next(error)
     }
 
-    if (user.length === 0) {
+    if (!user) {
         const error = new HttpError('관리자를 찾을 수 없습니다.', 404)
         return next(error)
     }
@@ -190,4 +189,108 @@ const login = async(req, res, next) => {
         }) //로그인 성공시 유저 정보 및 토큰 전송유저 아이디, 이메일, 토큰 전송
 }
 
-export default { getAdminById, signup, login }
+const updateAdmin = async(req, res, next) => {
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+        console.log(errors)
+        const error = new HttpError(
+            '유효하지 않은 입력이 존재합니다. 다시 시도해주세요',
+            422
+        )
+        return next(error)
+    }
+
+    const { name, password, region_id } = req.body
+    const adminId = parseInt(req.params.aid)
+
+    //TO-DO
+    //만약 데이터가 비어있을경우.. 이름이나 비밀번호 지역번호 중 입력되지 않았을 때 기존 데이터 그대로 저장하기. 만약 null일 경우? 혹은 undefined 인가...
+    //그럴때는 기존 데이터만 전송하거나 아니면 프리즈마에서 지원할지 모르겠는데 if사용해서 분배후 보내기
+
+    let user
+
+    try {
+        user = await prisma.region.findUnique({ where: { id: adminId } })
+    } catch (err) {
+        const error = HttpError('오류가 발생했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    if (!user) {
+        const error = new HttpError(
+            '찾을 수 없는 사용자 입니다. 다시 시도해주세요.',
+            404
+        )
+        return next(error)
+    }
+
+    let isAccessible = true //접근여부 임시변수
+
+    try {} catch (err) {
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+        return next(error)
+    }
+
+    if (!isAccessible) {
+        const error = new HttpError('허가되지 않은 접근입니다.', 403)
+        return next(error)
+    }
+
+    try {
+        user = await prisma.admin.update({
+            where: { id: adminId },
+            data: { name, password, region_id },
+        })
+    } catch (err) {
+        const error = new HttpError('에러가 발생했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    res.status(200).json({ message: '수정에 성공했습니다.' })
+}
+
+const deleteAdmin = async(req, res, next) => {
+    const adminId = parseInt(req.params.aid)
+
+    let user
+
+    try {
+        user = await prisma.admin.findUnique({ where: { id: adminId } })
+    } catch (err) {
+        const error = new HttpError('에러가 발생했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    //허가된 사용자만 지역을 검색할 수 있도록 기능 구현 예정
+
+    let isAccessible = true //접근여부 임시변수
+
+    try {} catch (err) {
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+        return next(error)
+    }
+
+    if (!isAccessible) {
+        const error = new HttpError('허가되지 않은 접근입니다.', 403)
+        return next(error)
+    }
+
+    if (!user) {
+        const error = new HttpError('찾을 수 없는 관리자입니다.', 404)
+        return next(error)
+    }
+
+    try {
+        user = await prisma.admin.delete({
+            where: { id: adminId },
+        })
+    } catch (err) {
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+        return next(error)
+    }
+
+    res.status(200).json({ message: '삭제성공' })
+}
+
+export default { getAdminById, signup, login, updateAdmin, deleteAdmin }

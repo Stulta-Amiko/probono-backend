@@ -2,8 +2,10 @@ import { PrismaClient } from '@prisma/client'
 
 import HttpError from '../../../backend/models/http-error'
 
-const sendNotification = (req, res, next) => {}
+const prisma = new PrismaClient()
 
-const receiveNotification = (req, res, next) => {}
+const sendNotification = async(req, res, next) => {}
+
+const receiveNotification = async(req, res, next) => {}
 
 export default { sendNotification, receiveNotification }
