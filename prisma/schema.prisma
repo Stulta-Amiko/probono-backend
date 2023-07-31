@@ -9,12 +9,13 @@ datasource db {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model admin {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.Text
-  email     String   @db.Text
-  password  String   @db.Text
+  id        Int         @id @default(autoincrement())
+  name      String      @db.Text
+  email     String      @db.Text
+  password  String      @db.Text
   region_id Int?
-  region    region?  @relation(fields: [region_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "admin_region_id_fk")
+  region    region?     @relation(fields: [region_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "admin_region_id_fk")
+  authority authority[]
   client    client[]
 
   @@index([region_id], map: "admin_region_id_fk")
@@ -43,4 +44,15 @@ model region {
   name   String?  @db.Text
   admin  admin[]
   client client[]
+}
+
+model authority {
+  id       Int     @id @default(autoincrement())
+  is_super Boolean
+  is_admin Boolean
+  is_user  Boolean
+  admin_id Int?
+  admin    admin?  @relation(fields: [admin_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "authority_admin_id_fk")
+
+  @@index([admin_id], map: "authority_admin_id_fk")
 }

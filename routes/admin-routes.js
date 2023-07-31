@@ -17,8 +17,14 @@ router.post(
 )
 router.post('/login', adminController.login)
 
+router.post('/authority', adminController.adminAuthority)
+
 router.patch('/update/:aid', adminController.updateAdmin)
 
+router.patch('/update/authority', adminController.updateAdminAuthority)
+
 router.delete('/resign/:aid', adminController.deleteAdmin)
+
+router.delete('/resign/authroity', adminController.deleteAdminAuthority)
 
 export default router
