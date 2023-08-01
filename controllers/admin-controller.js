@@ -145,7 +145,7 @@ const login = async(req, res, next) => {
         return next(error)
     }
 
-    if (existingUser.length === 0) {
+    if (!existingUser[0]) {
         const error = new HttpError('유효하지 않은 정보가 입력되었습니다.', 403)
         return next(error)
     }
@@ -194,6 +194,7 @@ const adminAuthority = async(req, res, next) => {
     const { is_super, is_admin, is_user, admin_id } = req.body
 
     let existingUser
+    let duplication
 
     try {
         existingUser = await prisma.admin.findUnique({ where: { id: admin_id } })
@@ -207,25 +208,36 @@ const adminAuthority = async(req, res, next) => {
         return next(error)
     }
 
-    let isAccessible
-
     try {
-        isAccessible = await prisma.authority.findMany({ where: { admin_id } })
+        duplication = await prisma.authority.findMany({ where: { admin_id } })
     } catch (err) {
         const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
         return next(error)
     }
 
-    /*
-        if (isAccessible.admin_id !== req.userData.adminId) {
-            const error = new HttpError('허가되지 않은 접근입니다.', 403)
-            return next(error)
-        } 프론트엔드 구현시 활성화*/
+    console.log(!!duplication[0].length)
 
-    if (!isAccessible.is_super) {
-        const error = new HttpError('허가되지 않은 접근입니다.', 403)
+    if (duplication[0]) {
+        const error = new HttpError('이미 권한 설정이 되어있는 사용자입니다.', 422)
         return next(error)
     }
+
+    let isAccessible
+        /*let superuser = req.userData.adminId
+
+                                                                                                                                              try {
+                                                                                                                                                  isAccessible = await prisma.authority.findMany({
+                                                                                                                                                      where: { admin_id: superuser },
+                                                                                                                                                  })
+                                                                                                                                              } catch (err) {
+                                                                                                                                                  const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+                                                                                                                                                  return next(error)
+                                                                                                                                              }
+
+                                                                                                                                              if (!isAccessible.is_super) {
+                                                                                                                                                    const error = new HttpError('허가되지 않은 접근입니다.', 403)
+                                                                                                                                                    return next(error)
+                                                                                                                                                } 프론트엔드 구현시 활성화 */
 
     try {
         await prisma.authority.create({
@@ -237,17 +249,124 @@ const adminAuthority = async(req, res, next) => {
             },
         })
     } catch (err) {
+        console.log(err)
         const error = new HttpError(
-            '회원가입에 실패했습니다. 다시 시도해주세요.',
+            '권한생성에 실패했습니다. 다시 시도해주세요.',
             500
         )
         return next(error)
     }
+
+    res.status(201).json({ message: 'create authority' })
 }
 
-const updateAdminAuthority = async(req, res, next) => {}
+const updateAdminAuthority = async(req, res, next) => {
+    const { is_super, is_admin, is_user, admin_id } = req.body
 
-const deleteAdminAuthority = async(req, res, next) => {}
+    let existingUser
+
+    try {
+        existingUser = await prisma.authority.findMany({ where: { admin_id } })
+    } catch (err) {
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    if (!existingUser[0]) {
+        const error = new HttpError(
+            '권한이 등록되지 않은 회원입니다. 권한을 먼저 등록해주세요',
+            404
+        )
+        return next(error)
+    }
+
+    let isAccessible
+        /*let superuser = req.userData.adminId
+
+                                                                                                                      try {
+                                                                                                                          isAccessible = await prisma.authority.findMany({
+                                                                                                                              where: { admin_id: superuser },
+                                                                                                                          })
+                                                                                                                      } catch (err) {
+                                                                                                                          const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+                                                                                                                          return next(error)
+                                                                                                                      }
+
+                                                                                                                      if (!isAccessible.is_super) {
+                                                                                                                                    const error = new HttpError('허가되지 않은 접근입니다.', 403)
+                                                                                                                                    return next(error)
+                                                                                                                                } 프론트엔드 구현시 활성화 */
+
+    const update_id = existingUser[0].id
+
+    try {
+        await prisma.authority.update({
+            where: { id: update_id },
+            data: {
+                is_super,
+                is_admin,
+                is_user,
+            },
+        })
+    } catch (err) {
+        console.log(err)
+        const error = new HttpError('수정에 실패했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    res.status(200).json({ message: '권한이 수정되었습니다.' })
+}
+
+const deleteAdminAuthority = async(req, res, next) => {
+    const { admin_id } = req.body
+
+    let existingUser
+
+    try {
+        existingUser = await prisma.authority.findMany({
+            where: { admin_id },
+        })
+    } catch (err) {
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    if (!existingUser[0]) {
+        const error = new HttpError(
+            '권한이 등록되지 않은 회원입니다. 권한을 먼저 등록해주세요',
+            404
+        )
+        return next(error)
+    }
+
+    let isAccessible
+        /*let superuser = req.userData.adminId
+
+                            try {
+                                isAccessible = await prisma.authority.findMany({
+                                    where: { admin_id: superuser },
+                                })
+                            } catch (err) {
+                                const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+                                return next(error)
+                            }
+
+                            if (!isAccessible.is_super) {
+                                                                        const error = new HttpError('허가되지 않은 접근입니다.', 403)
+                                                                        return next(error)
+                                                                    } 프론트엔드 구현시 활성화 */
+
+    try {
+        await prisma.authority.delete({
+            where: { id: existingUser[0].id },
+        })
+    } catch (err) {
+        const error = new HttpError('삭제에 실패했습니다. 다시 시도해주세요.', 500)
+        return next(error)
+    }
+
+    res.status(200).json({ message: '권한이 삭제되었습니다.' })
+}
 
 const updateAdmin = async(req, res, next) => {
     const errors = validationResult(req)
@@ -273,7 +392,7 @@ const updateAdmin = async(req, res, next) => {
     try {
         user = await prisma.region.findUnique({ where: { id: adminId } })
     } catch (err) {
-        const error = HttpError('오류가 발생했습니다. 다시 시도해주세요.', 500)
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요.', 500)
         return next(error)
     }
 
@@ -285,20 +404,22 @@ const updateAdmin = async(req, res, next) => {
         return next(error)
     }
 
-    let isAccessible //접근여부 임시변수
+    let isAccessible
+        /*let superuser = req.userData.adminId
 
-    try {
-        isAccessible = await prisma.admin.findMany({ where: { adminId } })
-    } catch (err) {
-        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
-        return next(error)
-    }
+                                                                                                          try {
+                                                                                                              isAccessible = await prisma.authority.findMany({
+                                                                                                                  where: { admin_id: superuser },
+                                                                                                              })
+                                                                                                          } catch (err) {
+                                                                                                              const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+                                                                                                              return next(error)
+                                                                                                          }
 
-    /*
-      if (isAccessible[0].id !== req.userData.adminId) {
-          const error = new HttpError('허가되지 않은 접근입니다.', 403)
-          return next(error)
-      }프론트 엔드 구현시 활성화*/
+                                                                                                          if (!isAccessible.is_super) {
+                                                                                                                            const error = new HttpError('허가되지 않은 접근입니다.', 403)
+                                                                                                                            return next(error)
+                                                                                                                        } 프론트엔드 구현시 활성화 */
 
     try {
         user = await prisma.admin.update({
@@ -327,17 +448,22 @@ const deleteAdmin = async(req, res, next) => {
 
     //허가된 사용자만 지역을 검색할 수 있도록 기능 구현 예정
 
-    let isAccessible = true //접근여부 임시변수
+    let isAccessible
+        /*let superuser = req.userData.adminId
 
-    try {} catch (err) {
-        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
-        return next(error)
-    }
+          try {
+              isAccessible = await prisma.authority.findMany({
+                  where: { admin_id: superuser },
+              })
+          } catch (err) {
+              const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+              return next(error)
+          }
 
-    if (!isAccessible) {
-        const error = new HttpError('허가되지 않은 접근입니다.', 403)
-        return next(error)
-    }
+          if (!isAccessible.is_super) {
+                                                            const error = new HttpError('허가되지 않은 접근입니다.', 403)
+                                                            return next(error)
+                                                        } 프론트엔드 구현시 활성화 */
 
     if (!user) {
         const error = new HttpError('찾을 수 없는 관리자입니다.', 404)

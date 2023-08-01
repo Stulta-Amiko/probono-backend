@@ -22,17 +22,18 @@ model admin {
 }
 
 model client {
-  id        Int      @id @default(autoincrement())
-  region_id Int?
-  admin_id  Int?
-  name      String   @db.Text
-  address   String   @db.Text
-  location  String?  @db.Text
-  remark    String?  @db.Text
-  birthdate DateTime @db.DateTime(0)
-  checkdate DateTime @db.DateTime(0)
-  admin     admin?   @relation(fields: [admin_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "client_admin_id_fk")
-  region    region?  @relation(fields: [region_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "client_region_id_fk")
+  id           Int      @id @default(autoincrement())
+  region_id    Int?
+  admin_id     Int?
+  name         String   @db.Text
+  address      String   @db.Text
+  location     String?  @db.Text
+  remark       String?  @db.Text
+  birthdate    DateTime @db.DateTime(0)
+  checkdate    DateTime @db.DateTime(0)
+  phone_number Int?
+  admin        admin?   @relation(fields: [admin_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "client_admin_id_fk")
+  region       region?  @relation(fields: [region_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "client_region_id_fk")
 
   @@index([admin_id], map: "client_admin_id_fk")
   @@index([region_id], map: "client_region_id_fk")
