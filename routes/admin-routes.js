@@ -1,11 +1,10 @@
 import express from 'express'
 import { check } from 'express-validator'
 
+import checkAuth from '../middleware/check-auth.js'
 import adminController from '../controllers/admin-controller.js'
 
 const router = express.Router()
-
-router.get('/:aid', adminController.getAdminById)
 
 router.post(
     '/signup', [
@@ -16,6 +15,14 @@ router.post(
     adminController.signup
 )
 router.post('/login', adminController.login)
+
+router.get('/', adminController.getAdmin)
+
+router.get('/:aid', adminController.getAdminById)
+
+router.get('/name/:aname', adminController.getAdminByName)
+
+router.use(checkAuth)
 
 router.post('/authority', adminController.adminAuthority)
 

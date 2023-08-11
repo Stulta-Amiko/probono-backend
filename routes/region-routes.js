@@ -7,9 +7,11 @@ const router = express.Router()
 
 /*지역 관리 관련 라우터 */
 
+router.get('/', regionController.getRegion)
+
 router.get('/id/:rid', regionController.getRegionById)
 
-router.get('/', regionController.getRegionByName)
+router.get('/name/:rname', regionController.getRegionByName)
 
 router.post('/', regionController.createRegion) //TO-DO 지역 추가할때 Admin만 추가 가능하도록 막아두기
 
