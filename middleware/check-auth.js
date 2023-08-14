@@ -11,13 +11,12 @@ const checkAuth = (req, res, next) => {
         return next()
     }
     try {
-        console.log(req.headers)
         const token = req.headers.authorization.split(' ')[1]
         if (!token) {
             throw new Error('Authentication failed')
         }
         const decodedToken = jwt.verify(token, JWTKEY)
-        req.userData = { userId: decodedToken.userId }
+        req.userData = { adminId: decodedToken.adminId }
         next()
     } catch (err) {
         console.log(err)

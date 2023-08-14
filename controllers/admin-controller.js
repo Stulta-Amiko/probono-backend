@@ -262,7 +262,7 @@ const adminAuthority = async(req, res, next) => {
         return next(error)
     }
 
-    if (!isAccessible.is_super) {
+    if (!isAccessible[0].is_super) {
         const error = new HttpError('허가되지 않은 접근입니다.', 403)
         return next(error)
     }
@@ -320,7 +320,7 @@ const updateAdminAuthority = async(req, res, next) => {
         return next(error)
     }
 
-    if (!isAccessible.is_super) {
+    if (!isAccessible[0].is_super) {
         const error = new HttpError('허가되지 않은 접근입니다.', 403)
         return next(error)
     }
@@ -379,7 +379,7 @@ const deleteAdminAuthority = async(req, res, next) => {
         return next(error)
     }
 
-    if (!isAccessible.is_super) {
+    if (!isAccessible[0].is_super) {
         const error = new HttpError('허가되지 않은 접근입니다.', 403)
         return next(error)
     }
@@ -444,7 +444,7 @@ const updateAdmin = async(req, res, next) => {
         return next(error)
     }
 
-    if (!isAccessible.is_super) {
+    if (!isAccessible[0].is_super) {
         const error = new HttpError('허가되지 않은 접근입니다.', 403)
         return next(error)
     }
@@ -488,7 +488,7 @@ const deleteAdmin = async(req, res, next) => {
         return next(error)
     }
 
-    if (!isAccessible.is_super) {
+    if (!isAccessible[0].is_super) {
         const error = new HttpError('허가되지 않은 접근입니다.', 403)
         return next(error)
     }

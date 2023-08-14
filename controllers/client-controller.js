@@ -7,33 +7,57 @@ const prisma = new PrismaClient()
 
 const getUserByRegionId = async(req, res, next) => {}
 
-const getUserByAdminId = async(req, res, next) => {}
+const getUserByAdminId = async(req, res, next) => {
+    let user
+    let adminId = parseInt(req.params.aid)
+
+    try {
+        user = await prisma.client.findMany({
+                where: { admin_id: adminId },
+            }) //비밀번호 빼고전송
+    } catch (err) {
+        console.log(err)
+        const error = new HttpError('Fetching users failed, Please try again later')
+        return next(error)
+    }
+    res.json({
+        users: user.map((user) => user),
+    })
+}
 
 const getUserByName = async(req, res, next) => {}
 
 const createUser = async(req, res, next) => {
     /*const errors = validationResult(req)
 
-                if (!errors.isEmpty()) {
-                    const error = new HttpError('유효하지 않은 정보가 입력되었습니다.')
-                    return next(error)
-                }*/
+                                                                if (!errors.isEmpty()) {
+                                                                    const error = new HttpError('유효하지 않은 정보가 입력되었습니다.')
+                                                                    return next(error)
+                                                                }*/
 
-    const {
-        region_id,
-        admin_id,
-        name,
-        address,
-        location,
-        remark,
-        birthdate,
-        checkdate,
-        phone_number,
-    } = req.body
+    const { region_id, name, address, birthdate, phone_number } = req.body
 
     let existingUser
 
     let PhoneNumber = parseInt(phone_number)
+    let isAccessible
+    let superuser = req.userData.adminId
+
+    try {
+        isAccessible = await prisma.authority.findMany({
+            where: { admin_id: superuser },
+        })
+    } catch (err) {
+        const error = new HttpError('오류가 발생했습니다. 다시 시도해주세요', 500)
+        return next(error)
+    }
+
+    console.log(req.userData.adminId)
+
+    if (!isAccessible[0].is_super) {
+        const error = new HttpError('허가되지 않은 접근입니다.', 403)
+        return next(error)
+    }
 
     try {
         existingUser = await prisma.client.findMany({
@@ -73,13 +97,13 @@ const createUser = async(req, res, next) => {
     try {
         await prisma.client.create({
             data: {
-                admin_id,
+                admin_id: req.userData.adminId,
                 name,
                 address,
-                location,
-                remark,
+                location: '좌표 더미, 추후 수정',
+                remark: '특이사항 초기 생성시 문구',
                 birthdate,
-                checkdate,
+                checkdate: '2023-01-01T13:49:50Z',
                 phone_number: PhoneNumber,
                 region_id,
             },

@@ -1,5 +1,6 @@
 import express from 'express'
 
+import checkAuth from '../middleware/check-auth.js'
 import clientController from '../controllers/client-controller.js'
 
 const router = express.Router()
@@ -9,6 +10,8 @@ router.get('/rid/:rid', clientController.getUserByRegionId)
 router.get('/aid/:aid', clientController.getUserByAdminId)
 
 router.get('/cname/:name', clientController.getUserByName)
+
+router.use(checkAuth)
 
 router.post('/', clientController.createUser) //일반적인 유저 등록하기
 
